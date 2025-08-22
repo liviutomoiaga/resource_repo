@@ -59,7 +59,7 @@ steps:
       fi
       curl -X POST \
         -H "Accept: application/vnd.github+json" \
-        -H "Authorization: Bearer $(GITHUB_TOKEN)" \
+        -H "Authorization: Bearer $(GIT_TOKEN)" \
         -H "Content-Type: application/json" \
         -d "{\"state\": \"$STATE\", \"description\": \"$DESC\", \"context\": \"ci/azure-pipelines\"}" \
         "https://api.github.com/repos/${{ parameters.OWNER }}/${{ parameters.REPO }}/statuses/${{ parameters.COMMIT_SHA }}"
@@ -69,7 +69,5 @@ steps:
   displayName: 'Notify GitHub: All checks have passed or failed'
   # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
   env:
-    GITHUB_TOKEN: $(GIT_TOKEN)
-
-# Replace OWNER, REPO, and COMMIT_SHA with the actual values or pipeline variables.
-# Ensure you add GITHUB_TOKEN as a secret variable in your pipeline for authentication.
+    GIT_TOKEN: $(GIT_TOKEN)
+    

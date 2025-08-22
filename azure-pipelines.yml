@@ -2,18 +2,33 @@
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
+name: 2ndPipeline
 
-trigger:
-- main
+trigger: none
+
+resources:
+  pipelines:
+  - pipeline: triggerd-by-dummy-main-pipeline
+    source: Liviu-Tomoiaga_adi.dummy_main
+    project: dummy_one
+    trigger: true
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: DownloadBuildArtifacts@1
+  inputs:
+    buildType: 'specific'
+    project: '$(System.TeamProject)'
+    pipeline: 'Liviu-Tomoiaga_adi.dummy_main' # The name of the pipeline you want to download from
+    buildVersionToDownload: 'latest' # Or 'latestFromBranch'
+    artifactName: 'drop' # The name of the artifact you want to download
+    downloadPath: '$(System.DefaultWorkingDirectory)'
+  displayName: 'Download Artifacts'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    # Example: A simple deployment step that uses the downloaded binary
+    ls -l $(System.DefaultWorkingDirectory)
+    cat $(System.DefaultWorkingDirectory)/drop/myapp.bin
+  displayName: 'Use Downloaded Artifacts'

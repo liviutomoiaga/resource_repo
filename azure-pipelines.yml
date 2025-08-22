@@ -9,8 +9,8 @@ trigger: none
 resources:
   pipelines:
   - pipeline: triggerd-by-dummy-main-pipeline
-    source: Liviu-Tomoiaga_adi.dummy_main
-    project: dummy_one
+    source: liviutomoiaga.master
+    project: LiviusPlayground
     trigger: true
 
 pool:
@@ -21,7 +21,7 @@ steps:
   inputs:
     buildType: 'specific'
     project: '$(System.TeamProject)'
-    pipeline: 'Liviu-Tomoiaga_adi.dummy_main' # The name of the pipeline you want to download from
+    pipeline: 'liviutomoiaga.master' # The name of the pipeline you want to download from
     buildVersionToDownload: 'latest' # Or 'latestFromBranch'
     artifactName: 'drop' # The name of the artifact you want to download
     downloadPath: '$(System.DefaultWorkingDirectory)'

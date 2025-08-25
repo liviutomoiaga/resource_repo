@@ -31,6 +31,14 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- bash: |
+    echo "Upstream project: $(resources.pipeline.triggerd-by-dummy-main-pipeline.projectName)"
+    echo "Upstream pipeline: $(resources.pipeline.triggerd-by-dummy-main-pipeline.pipelineName)"
+    echo "Upstream run ID:  $(resources.pipeline.triggerd-by-dummy-main-pipeline.runID)"
+    echo "Upstream run URI: $(resources.pipeline.triggerd-by-dummy-main-pipeline.runURI)"
+    echo "Upstream branch:  $(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceBranch)"
+    echo "Upstream commit:  $(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)"
+    
 - task: DownloadBuildArtifacts@1
   inputs:
     buildType: 'specific'

@@ -39,18 +39,31 @@ stages:
         cat $(System.DefaultWorkingDirectory)/drop/myapp.bin
       displayName: 'Use Downloaded Artifacts'
     
+    # Force failure for demo
     - script: |
         echo "Introduce a failure intentionally"
-        fi
+        exit 1
+      displayName: 'Force failure (demo)'
+    # Always publish this job's result as an output variable
+    - bash: |
+        echo "Job result seen here: $AGENT_JOBSTATUS"
+        echo "##vso[task.setvariable variable=PIPE_RESULT;isOutput=true]$AGENT_JOBSTATUS"
+      name: publishResult         # <-- reference name for outputs
+      displayName: 'Publish job result'
+      condition: always()
 
 - stage: Notify
   dependsOn: RunPipelineSlave
   condition: always()
   jobs:
   - job: PostStatus
+    variables:
+      # Pull the output variable from the previous stage/job
+      BUILD_RESULT: $[ stageDependencies.RunPipelineSlave.Download_and_use_binaries.outputs['publishResult.PIPE_RESULT'] ]
     steps:
     - bash: |
         echo "Sending POST request to GitHub checks endpoint..."
+        echo "Upstream stage/job result: $BUILD_RESULT"
         if [ "$BUILD_RESULT" = "Succeeded" ]; then
           STATE="success"
           DESC="All checks have passed"
@@ -73,5 +86,4 @@ stages:
       # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
       env:
         GITHUB_PAT: $(GITHUB_PAT)
-        BUILD_RESULT: ${{ dependencies.RunPipelineSlave.result }}
     

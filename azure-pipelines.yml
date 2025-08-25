@@ -21,7 +21,7 @@ pool:
 stages: 
 - stage: RunPipelineSlave
   jobs:
-  - job: Download and use binaries
+  - job: Download_and_use_binaries
     steps:   
     - task: DownloadBuildArtifacts@1
       inputs:

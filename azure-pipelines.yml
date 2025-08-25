@@ -51,7 +51,6 @@ stages:
     steps:
     - bash: |
         echo "Sending POST request to GitHub checks endpoint..."
-        BUILD_RESULT=${{ dependencies.RunPipelineSlave.result }}
         if [ "$BUILD_RESULT" = "Succeeded" ]; then
           STATE="success"
           DESC="All checks have passed"
@@ -74,4 +73,5 @@ stages:
       # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
       env:
         GITHUB_PAT: $(GITHUB_PAT)
+        BUILD_RESULT: ${{ dependencies.Build.result }}
     

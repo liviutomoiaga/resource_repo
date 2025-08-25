@@ -50,6 +50,10 @@ steps:
     cat $(System.DefaultWorkingDirectory)/drop/myapp.bin
   displayName: 'Use Downloaded Artifacts'
 
+- script: |
+    echo "Introduce a failure intentionally"
+    fi
+
 - bash: |
     echo "Sending POST request to GitHub checks endpoint..."
     if [ "$AGENT_JOBSTATUS" = "Succeeded" ]; then
@@ -69,7 +73,6 @@ steps:
         \"description\": \"$DESC\",
         \"context\": \"Azure Pipelines • Slave Pipeline Status\"
       }"
-    fi
   displayName: 'Notify GitHub: All checks have passed or failed'
   # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
   env:

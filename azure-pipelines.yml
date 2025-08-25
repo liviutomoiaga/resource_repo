@@ -40,10 +40,10 @@ stages:
       displayName: 'Use Downloaded Artifacts'
     
     # Force failure for demo
-    - script: |
-        echo "Introduce a failure intentionally"
-        exit 1
-      displayName: 'Force failure (demo)'
+    # - script: |
+    #     echo "Introduce a failure intentionally"
+    #     exit 1
+    #   displayName: 'Force failure (demo)'
     # Always publish this job's result as an output variable
     - bash: |
         echo "Job result seen here: $AGENT_JOBSTATUS"

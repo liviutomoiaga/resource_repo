@@ -1,23 +1,8 @@
 # Starter pipeline
-
-parameters:
-  - name: OWNER
-    displayName: 'GitHub Repository Owner'
-    type: string
-    default: ''
-  - name: REPO
-    displayName: 'GitHub Repository Name'
-    type: string
-    default: ''
-  - name: COMMIT_SHA
-    displayName: 'Commit SHA to update status for'
-    type: string
-    default: ''
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
-name: 2ndPipeline
-
+name: Slave Pipeline
 trigger: none
 
 variables:
@@ -33,48 +18,58 @@ resources:
 pool:
   vmImage: ubuntu-latest
 
-steps:   
-- task: DownloadBuildArtifacts@1
-  inputs:
-    buildType: 'specific'
-    project: '$(System.TeamProject)'
-    pipeline: 'liviutomoiaga.master' # The name of the pipeline you want to download from
-    buildVersionToDownload: 'latest' # Or 'latestFromBranch'
-    artifactName: 'drop' # The name of the artifact you want to download
-    downloadPath: '$(System.DefaultWorkingDirectory)'
-  displayName: 'Download Artifacts'
+stages: 
+- stage: Download and use binaries
+  jobs:
+  - job: RunPipelineSlave
+    steps:   
+    - task: DownloadBuildArtifacts@1
+      inputs:
+        buildType: 'specific'
+        project: '$(System.TeamProject)'
+        pipeline: 'liviutomoiaga.master' # The name of the pipeline you want to download from
+        buildVersionToDownload: 'latest' # Or 'latestFromBranch'
+        artifactName: 'drop' # The name of the artifact you want to download
+        downloadPath: '$(System.DefaultWorkingDirectory)'
+      displayName: 'Download Artifacts'
+    
+    - script: |
+        # Example: A simple deployment step that uses the downloaded binary
+        ls -l $(System.DefaultWorkingDirectory)
+        cat $(System.DefaultWorkingDirectory)/drop/myapp.bin
+      displayName: 'Use Downloaded Artifacts'
+    
+    - script: |
+        echo "Introduce a failure intentionally"
+        fi
 
-- script: |
-    # Example: A simple deployment step that uses the downloaded binary
-    ls -l $(System.DefaultWorkingDirectory)
-    cat $(System.DefaultWorkingDirectory)/drop/myapp.bin
-  displayName: 'Use Downloaded Artifacts'
-
-- script: |
-    echo "Introduce a failure intentionally"
-    fi
-
-- bash: |
-    echo "Sending POST request to GitHub checks endpoint..."
-    if [ "$AGENT_JOBSTATUS" = "Succeeded" ]; then
-      STATE="success"
-      DESC="All checks have passed"
-    else
-      STATE="failure"
-      DESC="Some checks have failed"
-    fi
-    curl -sS -X POST \
-      -H "Accept: application/vnd.github.v3+json" \
-      -H "Authorization: Bearer $GITHUB_PAT" \
-      "https://api.github.com/repos/liviutomoiaga/master/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
-      -d "{
-        \"state\": \"$STATE\",
-        \"target_url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\",
-        \"description\": \"$DESC\",
-        \"context\": \"Azure Pipelines • Slave Pipeline Status\"
-      }"
-  displayName: 'Notify GitHub: All checks have passed or failed'
-  # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
-  env:
-    GITHUB_PAT: $(GITHUB_PAT)
+- stage: Notify
+  dependsOn: RunPipelineSlave
+  condition: always()
+  jobs:
+  - job: PostStatus
+    steps:
+    - bash: |
+        echo "Sending POST request to GitHub checks endpoint..."
+        if [ "$AGENT_JOBSTATUS" = "Succeeded" ]; then
+          STATE="success"
+          DESC="All checks have passed"
+        else
+          STATE="failure"
+          DESC="Some checks have failed"
+        fi
+        curl -sS -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer $GITHUB_PAT" \
+          "https://api.github.com/repos/liviutomoiaga/master/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
+          -d "{
+            \"state\": \"$STATE\",
+            \"target_url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\",
+            \"description\": \"$DESC\",
+            \"context\": \"Azure Pipelines • Slave Pipeline Status\"
+          }"
+      displayName: 'Notify GitHub: All checks have passed or failed'
+      # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
+      env:
+        GITHUB_PAT: $(GITHUB_PAT)
     

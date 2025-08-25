@@ -73,5 +73,5 @@ stages:
       # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
       env:
         GITHUB_PAT: $(GITHUB_PAT)
-        BUILD_RESULT: ${{ dependencies.Build.result }}
+        BUILD_RESULT: ${{ dependencies.RunPipelineSlave.result }}
     

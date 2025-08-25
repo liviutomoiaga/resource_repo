@@ -80,7 +80,7 @@ stages:
             \"state\": \"$STATE\",
             \"target_url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\",
             \"description\": \"$DESC\",
-            \"context\": \"Azure Pipelines • $(resources.pipeline.triggerd-by-dummy-main-pipeline.pipelineName) Pipeline Status\"
+            \"context\": \"Azure Pipelines • $(Build.DefinitionName) Pipeline Status\"
           }"
       displayName: 'Notify GitHub: All checks have passed or failed'
       # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))

@@ -63,12 +63,12 @@ steps:
       -H "Accept: application/vnd.github.v3+json" \
       -H "Authorization: Bearer $GITHUB_PAT" \
       "https://api.github.com/repos/liviutomoiaga/master/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
-      -d '{
-        "state": $(STATE),
-        "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)",
-        "description": $(DESC),
-        "context": "Azure Pipelines • Slave Pipeline Status"
-      }'
+      -d "{
+        \"state\": \"$STATE\",
+        \"target_url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\",
+        \"description\": \"$DESC\",
+        \"context\": \"Azure Pipelines • Slave Pipeline Status\"
+      }"
     fi
   displayName: 'Notify GitHub: All checks have passed or failed'
   # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))

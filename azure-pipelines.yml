@@ -51,13 +51,15 @@ stages:
     steps:
     - bash: |
         echo "Sending POST request to GitHub checks endpoint..."
-        if [ "$AGENT_JOBSTATUS" = "Succeeded" ]; then
+        BUILD_RESULT=${{ dependencies.RunPipelineSlave.result }}
+        if [ "$BUILD_RESULT" = "Succeeded" ]; then
           STATE="success"
           DESC="All checks have passed"
         else
           STATE="failure"
           DESC="Some checks have failed"
         fi
+        echo "Final status: $STATE / $DESC"
         curl -sS -X POST \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: Bearer $GITHUB_PAT" \

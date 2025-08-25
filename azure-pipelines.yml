@@ -20,6 +20,9 @@ name: 2ndPipeline
 
 trigger: none
 
+variables:
+- group: Secrets   # contains secret GITHUB_PAT
+
 resources:
   pipelines:
   - pipeline: triggerd-by-dummy-main-pipeline
@@ -30,16 +33,7 @@ resources:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- bash: |
-    echo "Upstream project: $(resources.pipeline.triggerd-by-dummy-main-pipeline.projectName)"
-    echo "Upstream pipeline: $(resources.pipeline.triggerd-by-dummy-main-pipeline.pipelineName)"
-    echo "Upstream run ID:  $(resources.pipeline.triggerd-by-dummy-main-pipeline.runID)"
-    echo "Upstream run URI: $(resources.pipeline.triggerd-by-dummy-main-pipeline.runURI)"
-    echo "Upstream branch:  $(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceBranch)"
-    echo "Upstream commit:  $(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)"
-    echo "Current build link: $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
-    
+steps:   
 - task: DownloadBuildArtifacts@1
   inputs:
     buildType: 'specific'
@@ -56,7 +50,7 @@ steps:
     cat $(System.DefaultWorkingDirectory)/drop/myapp.bin
   displayName: 'Use Downloaded Artifacts'
 
-- script: |
+- bash: |
     echo "Sending POST request to GitHub checks endpoint..."
     if [ "$AGENT_JOBSTATUS" = "Succeeded" ]; then
       STATE="success"
@@ -65,13 +59,13 @@ steps:
       STATE="failure"
       DESC="Some checks have failed"
     fi
-    curl -X POST \
+    curl -sS -X POST \
       -H "Accept: application/vnd.github.v3+json" \
-      -H "Authorization: Bearer $(GITHUB_PAT)" \
+      -H "Authorization: Bearer $GITHUB_PAT" \
       "https://api.github.com/repos/liviutomoiaga/master/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
       -d '{
         "state": $(STATE),
-        "target_url": "https://dev.azure.com/$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)",
+        "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)",
         "description": $(DESC),
         "context": "Azure Pipelines • Slave Pipeline Status"
       }'
@@ -79,5 +73,5 @@ steps:
   displayName: 'Notify GitHub: All checks have passed or failed'
   # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
   env:
-    GIT_TOKEN: $(GIT_TOKEN)
+    GITHUB_PAT: $(GITHUB_PAT)
     

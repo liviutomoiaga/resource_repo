@@ -60,6 +60,8 @@ stages:
     variables:
       # Pull the output variable from the previous stage/job
       BUILD_RESULT: $[ stageDependencies.RunPipelineSlave.Download_and_use_binaries.outputs['publishResult.PIPE_RESULT'] ]
+      OWNER: ${{ split( resources.pipelines['triggerd-by-dummy-main-pipeline'].source, '.' )[0] }}
+      REPO:  ${{ split( resources.pipelines['triggerd-by-dummy-main-pipeline'].source, '.' )[1] }}
     steps:
     - bash: |
         echo "Sending POST request to GitHub checks endpoint..."
@@ -75,12 +77,12 @@ stages:
         curl -sS -X POST \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: Bearer $GITHUB_PAT" \
-          "https://api.github.com/repos/liviutomoiaga/master/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
+          "https://api.github.com/repos/$(OWNER)/$(REPO)/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
           -d "{
             \"state\": \"$STATE\",
             \"target_url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\",
             \"description\": \"$DESC\",
-            \"context\": \"Azure Pipelines • $(Build.DefinitionName) Pipeline Status\"
+            \"context\": \"$(Build.DefinitionName)\"
           }"
       displayName: 'Notify GitHub: All checks have passed or failed'
       # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))

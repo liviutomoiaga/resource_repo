@@ -62,17 +62,14 @@ stages:
       BUILD_RESULT: $[ stageDependencies.RunPipelineSlave.Download_and_use_binaries.outputs['publishResult.PIPE_RESULT'] ]
     steps:
     - bash: |
-      SRC="$(resources.pipeline.triggerd-by-dummy-main-pipeline.pipelineName)"
-      echo "Pipeline name from resources: $SRC"
-
-      IFS='.' read -r OWNER REPO <<< "$SRC"
-      echo "Owner=$OWNER"
-      echo "Repo=$REPO"
-
-      # Export for later steps
-      echo "##vso[task.setvariable variable=OWNER]$OWNER"
-      echo "##vso[task.setvariable variable=REPO]$REPO"
-    displayName: 'Extract OWNER and REPO from pipelineName'
+        SRC="$(resources.pipeline.triggerd-by-dummy-main-pipeline.pipelineName)"
+        echo "Pipeline name from resources: $SRC"
+        IFS='.' read -r OWNER REPO <<< "$SRC"
+        echo "Owner=$OWNER"
+        echo "Repo=$REPO"
+        echo "##vso[task.setvariable variable=OWNER]$OWNER"
+        echo "##vso[task.setvariable variable=REPO]$REPO"
+      displayName: 'Extract OWNER and REPO from pipelineName'
     - bash: |
         echo "Sending POST request to GitHub checks endpoint..."
         echo "Upstream stage/job result: $BUILD_RESULT"

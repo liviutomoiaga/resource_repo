@@ -54,7 +54,7 @@ stages:
 
 - stage: Notify
   dependsOn: RunPipelineSlave
-  condition: always()
+  condition: ne(variables['resources.triggeringAlias'], '')
   jobs:
   - job: PostStatus
     variables:

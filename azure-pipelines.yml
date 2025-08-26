@@ -3,7 +3,8 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 name: Slave Pipeline
-trigger: none
+trigger:
+  - main
 
 variables:
 - group: Secrets   # contains secret GITHUB_PAT

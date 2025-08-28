@@ -4,6 +4,16 @@
 # https://aka.ms/yaml
 name: Slave Pipeline
 
+variables:
+- group: Secrets   # contains secret GITHUB_PAT
+- name: TargetBranch
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main') ? 'refs/heads/feature/test-different-branch-slave' : 'refs/heads/main']
+  # ${{ if eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'feature/*') }}:
+  #   TargetBranch: 'refs/heads/main'
+  # ${{ elseif eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'main') }}:
+  #   TargetBranch: 'refs/heads/feature/test-different-branch-slave'
+  # ${{ else }}:
+  #   TargetBranch: 'refs/heads/feature/random-slave'
 
 trigger:
   - main
@@ -20,22 +30,6 @@ resources:
       - feature/*
       - main
 
-variables:
-- group: Secrets   # contains secret GITHUB_PAT
-- name: TargetBranch
-  value: $[
-    startsWith(variables['resources.pipeline.trigger-event.sourceBranch'], 'refs/heads/feature/')
-    ? 'refs/heads/main'
-    : eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'refs/heads/main')
-      ? 'refs/heads/feature/test-different-branch-slave'
-      : 'refs/heads/feature/random-slave'
-  ]
-  # ${{ if eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'feature/*') }}:
-  #   TargetBranch: 'refs/heads/main'
-  # ${{ elseif eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'main') }}:
-  #   TargetBranch: 'refs/heads/feature/test-different-branch-slave'
-  # ${{ else }}:
-  #   TargetBranch: 'refs/heads/feature/random-slave'
 
 pool:
   vmImage: ubuntu-latest
@@ -117,4 +111,4 @@ stages:
       # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
       env:
         GITHUB_PAT: $(GITHUB_PAT)
-    
+

@@ -25,9 +25,9 @@ variables:
   ${{ if eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'feature/*') }}:
     TargetBranch: 'refs/heads/main'
   ${{ elseif eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'main') }}:
-    downloadBranch: 'refs/heads/feature/test-different-branch-slave'
+    TargetBranch: 'refs/heads/feature/test-different-branch-slave'
   ${{ else }}:
-    downloadBranch: 'refs/heads/feature/random-slave'
+    TargetBranch: 'refs/heads/feature/random-slave'
 
 pool:
   vmImage: ubuntu-latest

@@ -7,13 +7,18 @@ name: Slave Pipeline
 variables:
 - group: Secrets   # contains secret GITHUB_PAT
 - name: TargetBranch
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main') ? 'refs/heads/feature/test-different-branch-slave' : 'refs/heads/main']
-  # ${{ if eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'feature/*') }}:
-  #   TargetBranch: 'refs/heads/main'
-  # ${{ elseif eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'main') }}:
-  #   TargetBranch: 'refs/heads/feature/test-different-branch-slave'
-  # ${{ else }}:
-  #   TargetBranch: 'refs/heads/feature/random-slave'
+  value: refs/heads/feature/random-slave
+
+# If build is on main -> use a specific feature branch
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - name: TargetBranch
+    value: refs/heads/feature/test-different-branch-slave
+
+# If build is on any feature/* -> use main
+- ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
+  - name: TargetBranch
+    value: refs/heads/main
+  
 
 trigger:
   - main

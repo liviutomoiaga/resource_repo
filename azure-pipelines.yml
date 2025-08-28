@@ -34,7 +34,7 @@ resources:
 pool:
   vmImage: ubuntu-latest
 
-stages: 
+stages:
 - stage: RunPipelineSlave
   jobs:
   - job: Download_and_use_binaries

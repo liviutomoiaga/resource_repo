@@ -3,18 +3,38 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 name: Slave Pipeline
-trigger:
-  - main
 
 variables:
 - group: Secrets   # contains secret GITHUB_PAT
+- name: TargetBranch
+  value: refs/heads/feature/random-slave
+
+# If build is on main -> use a specific feature branch
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - name: TargetBranch
+    value: refs/heads/feature/test-different-branch-slave
+
+# If build is on any feature/* -> use main
+- ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
+  - name: TargetBranch
+    value: refs/heads/main
+  
+
+trigger:
+  - main
+  - feature/*
 
 resources:
   pipelines:
-  - pipeline: triggerd-by-dummy-main-pipeline
+  - pipeline: trigger-event
     source: liviutomoiaga.master
     project: LiviusPlayground
-    trigger: true
+    branch: $(TargetBranch)
+    trigger:
+      branches:
+      - feature/*
+      - main
+
 
 pool:
   vmImage: ubuntu-latest
@@ -41,10 +61,9 @@ stages:
       displayName: 'Use Downloaded Artifacts'
     
     # Force failure for demo
-    # - script: |
-    #     echo "Introduce a failure intentionally"
-    #     exit 1
-    #   displayName: 'Force failure (demo)'
+    - script: |
+        echo "Run$(TargetBranch)"
+      displayName: 'Execute azure pipeline using $(TargetBranch)'
     # Always publish this job's result as an output variable
     - bash: |
         echo "Job result seen here: $AGENT_JOBSTATUS"
@@ -63,7 +82,7 @@ stages:
       BUILD_RESULT: $[ stageDependencies.RunPipelineSlave.Download_and_use_binaries.outputs['publishResult.PIPE_RESULT'] ]
     steps:
     - bash: |
-        SRC="$(resources.pipeline.triggerd-by-dummy-main-pipeline.pipelineName)"
+        SRC="$(resources.pipeline.trigger-event.pipelineName)"
         echo "Pipeline name from resources: $SRC"
         IFS='.' read -r OWNER REPO <<< "$SRC"
         echo "Owner=$OWNER"
@@ -85,7 +104,7 @@ stages:
         curl -sS -X POST \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: Bearer $GITHUB_PAT" \
-          "https://api.github.com/repos/${OWNER}/${REPO}/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
+          "https://api.github.com/repos/${OWNER}/${REPO}/statuses/$(resources.pipeline.trigger-event.sourceCommit)" \
           -d "{
             \"state\": \"$STATE\",
             \"target_url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\",
@@ -96,4 +115,4 @@ stages:
       # condition: and(always(), eq(variables['Build.Reason'], 'Pipeline'))
       env:
         GITHUB_PAT: $(GITHUB_PAT)
-    
+

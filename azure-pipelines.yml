@@ -7,17 +7,12 @@ name: Slave Pipeline
 variables:
 - group: Secrets   # contains secret GITHUB_PAT
 - name: TargetBranch
-  value: refs/heads/feature/random-slave
-
-# If build is on main -> use a specific feature branch
-- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-  - name: TargetBranch
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     value: refs/heads/feature/test-different-branch-slave
-
-# If build is on any feature/* -> use main
-- ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
-  - name: TargetBranch
+  ${{ elseif startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
     value: refs/heads/main
+  ${{ else }}:
+    value: refs/heads/feature/random-slave
   
 
 trigger:
@@ -53,6 +48,11 @@ stages:
         artifactName: 'drop' # The name of the artifact you want to download
         downloadPath: '$(System.DefaultWorkingDirectory)'
       displayName: 'Download Artifacts'
+
+    - script: |
+        echo "Self repo checked out branch: $(Build.SourceBranch)"
+        echo "Selected pipeline resource branch: $(TargetBranch)"
+      displayName: Debug branches
     
     - script: |
         # Example: A simple deployment step that uses the downloaded binary

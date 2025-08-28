@@ -38,7 +38,16 @@ stages:
 - stage: RunPipelineSlave
   jobs:
   - job: Download_and_use_binaries
-    steps:   
+    steps:
+    # Disable default checkout
+    - checkout: none
+    
+    # Explicit checkout of the self repo at TargetBranch
+    - checkout: self
+      persistCredentials: true
+      clean: true
+      fetchDepth: 0
+      ref: ${{ variables.TargetBranch }}
     - task: DownloadBuildArtifacts@1
       inputs:
         buildType: 'specific'

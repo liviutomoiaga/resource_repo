@@ -4,9 +4,6 @@
 # https://aka.ms/yaml
 name: Slave Pipeline
 
-variables:
-  libiioPipelineId: 9
-
 
 trigger:
   - main

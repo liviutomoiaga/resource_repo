@@ -3,18 +3,34 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 name: Slave Pipeline
-trigger:
-  - main
 
 variables:
-- group: Secrets   # contains secret GITHUB_PAT
+  libiioPipelineId: 9
+
+
+trigger:
+  - main
+  - feature/*
 
 resources:
   pipelines:
-  - pipeline: triggerd-by-dummy-main-pipeline
+  - pipeline: trigger-event
     source: liviutomoiaga.master
     project: LiviusPlayground
-    trigger: true
+    branch: $(TargetBranch)
+    trigger:
+      branches:
+      - feature/*
+      - main
+
+variables:
+- group: Secrets   # contains secret GITHUB_PAT
+  ${{ if eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'feature/*') }}:
+    TargetBranch: 'refs/heads/main'
+  ${{ elseif eq(variables['resources.pipeline.trigger-event.sourceBranch'], 'main') }}:
+    downloadBranch: 'refs/heads/feature/test-different-branch-slave'
+  ${{ else }}:
+    downloadBranch: 'refs/heads/feature/random-slave'
 
 pool:
   vmImage: ubuntu-latest
@@ -63,7 +79,7 @@ stages:
       BUILD_RESULT: $[ stageDependencies.RunPipelineSlave.Download_and_use_binaries.outputs['publishResult.PIPE_RESULT'] ]
     steps:
     - bash: |
-        SRC="$(resources.pipeline.triggerd-by-dummy-main-pipeline.pipelineName)"
+        SRC="$(resources.pipeline.trigger-event.pipelineName)"
         echo "Pipeline name from resources: $SRC"
         IFS='.' read -r OWNER REPO <<< "$SRC"
         echo "Owner=$OWNER"
@@ -85,7 +101,7 @@ stages:
         curl -sS -X POST \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: Bearer $GITHUB_PAT" \
-          "https://api.github.com/repos/${OWNER}/${REPO}/statuses/$(resources.pipeline.triggerd-by-dummy-main-pipeline.sourceCommit)" \
+          "https://api.github.com/repos/${OWNER}/${REPO}/statuses/$(resources.pipeline.trigger-event.sourceCommit)" \
           -d "{
             \"state\": \"$STATE\",
             \"target_url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\",

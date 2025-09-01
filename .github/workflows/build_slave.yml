@@ -93,7 +93,7 @@ jobs:
             "https://api.github.com/repos/${{ steps.p.outputs.source_repo }}/statuses/${{ steps.p.outputs.source_sha }}" \
             -d "{
               \"state\": \"success\",
-              \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\,
+              \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\",
               \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
               \"description\": \"cB build passed\"
             }"
@@ -109,7 +109,7 @@ jobs:
             "https://api.github.com/repos/${{ steps.p.outputs.source_repo }}/statuses/${{ steps.p.outputs.source_sha }}" \
             -d "{
               \"state\": \"failure\",
-              \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\,
+              \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\",
               \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
               \"description\": \"cB build failed\"
             }"

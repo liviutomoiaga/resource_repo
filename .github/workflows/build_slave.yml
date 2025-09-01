@@ -41,7 +41,8 @@ jobs:
           # Branch mapping (e.g., v0 -> v0b, v2 -> v2b) is computed in Master and sent as target_branch_b
           ref: ${{ steps.p.outputs.target_branch_b }}
           fetch-depth: 0
-
+      
+      # - Actually I might not need this
       # - name: Install dependencies (jq, gh)
       #   shell: bash
       #   run: |

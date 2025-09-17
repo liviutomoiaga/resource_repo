@@ -83,6 +83,19 @@ jobs:
           echo "Slave-built-using-artifacts-from-${{ steps.p.outputs.source_repo }}@${{ steps.p.outputs.source_sha }}" > out/cb.bin
           # <<< Replace with your real build <<<
 
+      - name: Report back to Main Repo commit status
+        uses: liviutomoiaga/shared_action/cascade-build-reporter@main
+        with:
+          op: report
+          status_context: adi-resource-build
+          status_state: ${{ job.status }}
+          resource_owner: liviutomoiaga
+          resource_repo: resource_repo
+          resource_event_type: adi-resource-trigger
+          artifact_name: main-bundle
+          resource_repo_branch: ${{ steps.map.outputs.b_branch }}
+          github_token: ${{ secrets.GIT_TOKEN }}
+
       - name: Report SUCCESS to Repo Master commit status
         if: success()
         shell: bash

@@ -2,7 +2,7 @@ name: Build cB (dispatched)
 
 on:
   repository_dispatch:
-    types: [ build-slave ]
+    types: [ adi-resource-trigger ]
 
 # Required so we can checkout code and read other runs/artifacts.
 permissions:

@@ -41,25 +41,7 @@ jobs:
           # Branch mapping (e.g., v0 -> v0b, v2 -> v2b) is computed in Master and sent as target_branch_b
           ref: ${{ steps.p.outputs.target_branch_b }}
           fetch-depth: 0
-      
-      # - Actually I might not need this
-      # - name: Install dependencies (jq, gh)
-      #   shell: bash
-      #   run: |
-      #     set -euo pipefail
-      #     sudo apt-get update
-      #     sudo apt-get install -y jq
-      #     # Install GitHub CLI
-      #     type -p gh || (
-      #       curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-      #         | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-      #       sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-      #       echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-      #         | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-      #       sudo apt-get update
-      #       sudo apt-get install -y gh
-      #     )
-
+          
       - name: Download artifact from Master
         env:
           GH_TOKEN: ${{ secrets.GIT_TOKEN  }}  # must have read perms in Master
@@ -85,45 +67,43 @@ jobs:
 
       - name: Report back to Main Repo commit status
         uses: liviutomoiaga/shared_action/cascade-build-reporter@main
+        if: always()
         with:
           op: report
           status_context: adi-resource-build
-          status_state: ${{ job.status }}
-          resource_owner: liviutomoiaga
-          resource_repo: resource_repo
-          resource_event_type: adi-resource-trigger
-          artifact_name: main-bundle
+          report_state: ${{ job.status }}
+          report_target_url: adi-resource-trigger
           resource_repo_branch: ${{ steps.map.outputs.b_branch }}
-          github_token: ${{ secrets.GIT_TOKEN }}
+          status_pat: ${{ secrets.GIT_TOKEN }}
 
-      - name: Report SUCCESS to Repo Master commit status
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -sS -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GIT_TOKEN  }}" \
-            "https://api.github.com/repos/${{ steps.p.outputs.source_repo }}/statuses/${{ steps.p.outputs.source_sha }}" \
-            -d "{
-              \"state\": \"success\",
-              \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\",
-              \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-              \"description\": \"cB build passed\"
-            }"
+      # - name: Report SUCCESS to Repo Master commit status
+      #   if: success()
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
+      #     curl -sS -X POST \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       -H "Authorization: Bearer ${{ secrets.GIT_TOKEN  }}" \
+      #       "https://api.github.com/repos/${{ steps.p.outputs.source_repo }}/statuses/${{ steps.p.outputs.source_sha }}" \
+      #       -d "{
+      #         \"state\": \"success\",
+      #         \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\",
+      #         \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
+      #         \"description\": \"cB build passed\"
+      #       }"
 
-      - name: Report FAILURE to Master commit status
-        if: failure()
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -sS -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GIT_TOKEN  }}" \
-            "https://api.github.com/repos/${{ steps.p.outputs.source_repo }}/statuses/${{ steps.p.outputs.source_sha }}" \
-            -d "{
-              \"state\": \"failure\",
-              \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\",
-              \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-              \"description\": \"cB build failed\"
-            }"
+      # - name: Report FAILURE to Master commit status
+      #   if: failure()
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
+      #     curl -sS -X POST \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       -H "Authorization: Bearer ${{ secrets.GIT_TOKEN  }}" \
+      #       "https://api.github.com/repos/${{ steps.p.outputs.source_repo }}/statuses/${{ steps.p.outputs.source_sha }}" \
+      #       -d "{
+      #         \"state\": \"failure\",
+      #         \"context\":\"Repo Slave: build on (${{ steps.p.outputs.target_branch_b }})\",
+      #         \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
+      #         \"description\": \"cB build failed\"
+      #       }"

@@ -11,10 +11,7 @@ permissions:
 
 jobs:
   build-cb:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ github.event.client_payload.os || 'ubuntu-latest' }}
     timeout-minutes: 60
     steps:
       - name: Run the action

@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-cb:
-    runs-on: ${{ github.event.client_payload.os || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.client_payload.runner_os || 'ubuntu-latest' }}
     timeout-minutes: 60
     steps:
       - name: Run the action

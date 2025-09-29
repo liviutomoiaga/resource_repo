@@ -11,9 +11,14 @@ permissions:
 
 jobs:
   build-cb:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
+      - name: Run the action
+        run: echo "Running on ${{ runner.os }}"
       - name: Extract and validate payload
         id: p
         shell: bash

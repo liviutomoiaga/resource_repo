@@ -44,19 +44,19 @@ jobs:
           ref: ${{ steps.p.outputs.target_branch_b }}
           fetch-depth: 0
           
-      - name: Download artifact from Master
-        env:
-          GH_TOKEN: ${{ secrets.GIT_TOKEN  }}  # must have read perms in Master
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p ca-input
-          gh run download "${{ steps.p.outputs.source_run_id }}" \
-            -R "${{ steps.p.outputs.source_repo }}" \
-            -n "${{ steps.p.outputs.artifact_name }}" \
-            -D ./ca-input
-          echo "Downloaded files:"
-          ls -la ./ca-input
+      # - name: Download artifact from Master
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GIT_TOKEN  }}  # must have read perms in Master
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
+      #     mkdir -p ca-input
+      #     gh run download "${{ steps.p.outputs.source_run_id }}" \
+      #       -R "${{ steps.p.outputs.source_repo }}" \
+      #       -n "${{ steps.p.outputs.artifact_name }}" \
+      #       -D ./ca-input
+      #     echo "Downloaded files:"
+      #     ls -la ./ca-input
 
       - name: Build cB using cA artifact
         shell: bash

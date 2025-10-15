@@ -2,7 +2,7 @@ name: Build cB (dispatched)
 
 on:
   repository_dispatch:
-    types: [ adi-resource-trigger ]
+    types: [ adi-worker-trigger ]
 
 # Required so we can checkout code and read other runs/artifacts.
 permissions:
@@ -44,19 +44,19 @@ jobs:
           ref: ${{ steps.p.outputs.target_branch_b }}
           fetch-depth: 0
           
-      # - name: Download artifact from Master
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GIT_TOKEN  }}  # must have read perms in Master
-      #   shell: bash
-      #   run: |
-      #     set -euo pipefail
-      #     mkdir -p ca-input
-      #     gh run download "${{ steps.p.outputs.source_run_id }}" \
-      #       -R "${{ steps.p.outputs.source_repo }}" \
-      #       -n "${{ steps.p.outputs.artifact_name }}" \
-      #       -D ./ca-input
-      #     echo "Downloaded files:"
-      #     ls -la ./ca-input
+      - name: Download artifact from Master
+        env:
+          GH_TOKEN: ${{ secrets.GIT_TOKEN  }}  # must have read perms in Master
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ca-input
+          gh run download "${{ steps.p.outputs.source_run_id }}" \
+            -R "${{ steps.p.outputs.source_repo }}" \
+            -n "${{ steps.p.outputs.artifact_name }}" \
+            -D ./ca-input
+          echo "Downloaded files:"
+          ls -la ./ca-input
 
       - name: Build cB using cA artifact
         shell: bash
@@ -72,9 +72,9 @@ jobs:
         if: always()
         with:
           op: report
-          status_context: adi-resource-build
+          status_context: adi-worker-build
           report_state: ${{ job.status }}
-          report_target_url: adi-resource-trigger
-          resource_repo_branch: ${{ steps.map.outputs.b_branch }}
+          report_target_url: adi-worker-trigger
+          worker_repo_branch: ${{ steps.map.outputs.b_branch }}
           status_pat: ${{ secrets.GIT_TOKEN }}
 
